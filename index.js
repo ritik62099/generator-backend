@@ -1,4 +1,4 @@
-// index.js
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,15 +8,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/generator', {
+// ✅ MongoDB Atlas connection using environment variable
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('MongoDB error:', err));
+.catch(err => console.error('❌ MongoDB error:', err));
 
-// Get all readings for a month
+// ✅ Get all readings for a month
 app.get('/readings', async (req, res) => {
   try {
     const { month } = req.query; // format: YYYY-MM
@@ -27,9 +27,7 @@ app.get('/readings', async (req, res) => {
   }
 });
 
-// Add or update a reading
-// backend/index.js
-
+// ✅ Add or update a reading
 app.post('/readings', async (req, res) => {
   try {
     const {
@@ -89,10 +87,8 @@ app.post('/readings', async (req, res) => {
   }
 });
 
-
-// Start Server
-const PORT = 5000;
+// ✅ Start server (use dynamic port for platforms like Render)
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
-
