@@ -1,37 +1,14 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../sequelize');
+// models/Reading.js
+const mongoose = require('mongoose');
 
-const Reading = sequelize.define('Reading', {
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
-  },
-  month: {
-    type: DataTypes.STRING(7),
-    allowNull: false
-  },
-  openingHour: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  openingMinute: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  closingHour: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  closingMinute: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  usage: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  }
-}, {
-  timestamps: false // 👉 Yeh line add karo
+const readingSchema = new mongoose.Schema({
+  date: { type: String, required: true },
+  month: { type: String, required: true },
+  openingHour: { type: Number, required: true },
+  openingMinute: { type: Number, required: true },
+  closingHour: { type: Number, required: true },
+  closingMinute: { type: Number, required: true },
+  usage: { type: Number, required: true }, // in minutes
 });
 
-module.exports = Reading;
+module.exports = mongoose.model('Reading', readingSchema);
