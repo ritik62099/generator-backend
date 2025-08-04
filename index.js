@@ -5,7 +5,12 @@ const cors = require('cors');
 const Reading = require('./models/Reading');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://generator-frontend-kappa.vercel.app',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // ✅ MongoDB Atlas connection using environment variable
