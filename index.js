@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Reading = require('./models/Reading');
+
 
 const app = express();
 app.use(cors({
@@ -30,6 +30,10 @@ app.get('/readings', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch readings' });
   }
+});
+
+app.get("/", (req, res) => {
+  res.send("Hello from Express on Vercel!");
 });
 
 // ✅ Add or update a reading
@@ -92,8 +96,4 @@ app.post('/readings', async (req, res) => {
   }
 });
 
-// ✅ Start server (use dynamic port for platforms like Render)
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+module.exports = app;
