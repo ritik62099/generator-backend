@@ -1,6 +1,6 @@
 // models/Reading.js
 const mongoose = require('mongoose');
-
+const Reading = require('./models/Reading');
 const readingSchema = new mongoose.Schema({
   date: { type: String, required: true },
   month: { type: String, required: true },
