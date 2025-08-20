@@ -3,12 +3,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require("body-parser");
+const Reading = require('./models/Reading');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ MongoDB Atlas connection using environment variable
+// ✅ MongoDB Atlas connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -16,19 +17,23 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('✅ MongoDB connected'))
 .catch(err => console.error('❌ MongoDB error:', err));
 
+// ✅ Root route
+app.get("/", (req, res) => {
+  res.send("Hello from Express on Vercel!");
+});
+
 // ✅ Get all readings for a month
 app.get('/readings', async (req, res) => {
   try {
     const { month } = req.query; // format: YYYY-MM
-    const readings = await Reading.find({ month });
+    if (!month) return res.status(400).json({ error: "Month is required (YYYY-MM)" });
+
+    const readings = await Reading.find({ month }).sort({ date: 1 });
     res.json(readings);
   } catch (err) {
+    console.error("❌ Error fetching readings:", err);
     res.status(500).json({ error: 'Failed to fetch readings' });
   }
-});
-
-app.get("/", (req, res) => {
-  res.send("Hello from Express on Vercel!");
 });
 
 // ✅ Add or update a reading
@@ -42,13 +47,14 @@ app.post('/readings', async (req, res) => {
       closingMinute
     } = req.body;
 
-    const month = date?.slice(0, 7);
+    // --- Validation ---
+    if (!date) return res.status(400).json({ error: 'Date is required' });
+    const month = date.slice(0, 7);
 
-    const allValid = [openingHour, openingMinute, closingHour, closingMinute]
-      .every(v => typeof v === 'number' && !isNaN(v));
-
-    if (!date || !month || !allValid) {
-      return res.status(400).json({ error: 'Invalid or missing values' });
+    const fields = [openingHour, openingMinute, closingHour, closingMinute];
+    const allValid = fields.every(v => typeof v === 'number' && !isNaN(v));
+    if (!allValid) {
+      return res.status(400).json({ error: 'All time fields must be numbers' });
     }
 
     const opening = openingHour * 60 + openingMinute;
@@ -60,21 +66,15 @@ app.post('/readings', async (req, res) => {
 
     const usage = closing - opening;
 
+    // --- Save or Update ---
     const existing = await Reading.findOne({ date });
-
     if (existing) {
-      existing.set({
-        openingHour,
-        openingMinute,
-        closingHour,
-        closingMinute,
-        usage
-      });
+      existing.set({ openingHour, openingMinute, closingHour, closingMinute, usage });
       await existing.save();
-      return res.json({ updated: true });
+      return res.json({ updated: true, reading: existing });
     }
 
-    await Reading.create({
+    const newReading = await Reading.create({
       date,
       month,
       openingHour,
@@ -84,9 +84,9 @@ app.post('/readings', async (req, res) => {
       usage
     });
 
-    res.json({ created: true });
+    res.json({ created: true, reading: newReading });
   } catch (err) {
-    console.error('Error saving reading:', err);
+    console.error("❌ Error saving reading:", err);
     res.status(500).json({ error: 'Failed to save reading' });
   }
 });
