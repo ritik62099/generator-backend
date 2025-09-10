@@ -25,16 +25,21 @@ app.get("/", (req, res) => {
 // ✅ Get all readings for a month
 app.get('/readings', async (req, res) => {
   try {
-    const { month } = req.query; // format: YYYY-MM
+    const { month } = req.query;
     if (!month) return res.status(400).json({ error: "Month is required (YYYY-MM)" });
 
+    console.log("👉 Fetching readings for month:", month);
+
     const readings = await Reading.find({ month }).sort({ date: 1 });
+    console.log("✅ Readings found:", readings.length);
+
     res.json(readings);
   } catch (err) {
-    console.error("❌ Error fetching readings:", err);
-    res.status(500).json({ error: 'Failed to fetch readings' });
+    console.error("❌ Error fetching readings:", err.message);
+    res.status(500).json({ error: 'Failed to fetch readings', details: err.message });
   }
 });
+
 
 // ✅ Add or update a reading
 app.post('/readings', async (req, res) => {
@@ -92,3 +97,6 @@ app.post('/readings', async (req, res) => {
 });
 
 module.exports = app;
+
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`)); ritik
